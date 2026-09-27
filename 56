@@ -1,0 +1,60 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Target Lock & Aimbot Menu",
+   LoadingTitle = "Rayfield Interface",
+   LoadingSubtitle = "Custom Script",
+   ConfigurationSaving = {
+      Enabled = false,
+   },
+   KeySystem = false,
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+
+local TargetName = ""
+local AimbotEnabled = false
+
+-- ช่องกรอกชื่อผู้เล่นเป้าหมาย
+Tab:CreateInput({
+   Name = "ชื่อผู้เล่นเป้าหมาย",
+   PlaceholderText = "พิมพ์ชื่อหรือชื่อเล่น (DisplayName)...",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+      TargetName = Text
+   end,
+})
+
+-- ปุ่มเปิด/ปิดระบบล็อกหัว
+Tab:CreateToggle({
+   Name = "ล็อกหัวเป้าหมาย (Lock Head)",
+   CurrentValue = false,
+   Flag = "LockHeadToggle",
+   Callback = function(Value)
+      AimbotEnabled = Value
+   end,
+})
+
+-- ระบบทำงานเบื้องหลัง (Camera Lock)
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+RunService.RenderStepped:Connect(function()
+   if AimbotEnabled and TargetName ~= "" then
+      local targetPlayer = nil
+      for _, p in ipairs(Players:GetPlayers()) do
+         if p ~= LocalPlayer and (p.Name:lower():sub(1, #TargetName) == TargetName:lower() or (p.DisplayName and p.DisplayName:lower():sub(1, #TargetName) == TargetName:lower())) then
+            targetPlayer = p
+            break
+         end
+      end
+      
+      if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
+         local head = targetPlayer.Character.Head
+         -- ล็อกมุมมองกล้องไปยังหัวของผู้เล่นเป้าหมายทันที
+         Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+      end
+   end
+end)
